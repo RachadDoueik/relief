@@ -28,7 +28,7 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = false , unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -38,23 +38,23 @@ public class User implements UserDetails {
     private UserRole userRole;
 
     //a user has a set of projects created in order
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL , orphanRemoval = true)
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Project> projects = new HashSet<>();
 
     //a user has a set of comments made
-    @OneToMany(mappedBy = "author" , cascade =  CascadeType.ALL , orphanRemoval = true)
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments = new HashSet<>();
 
     //a user has a set of tasks that he created
-    @OneToMany(mappedBy = "createdBy" , cascade = CascadeType.ALL , orphanRemoval = true)
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Task> createdTasks = new HashSet<>();
 
     //a user has a set of tasks assigned to him
-    @OneToMany(mappedBy = "assignedUser" , cascade = CascadeType.ALL , orphanRemoval = true)
+    @OneToMany(mappedBy = "assignedUser", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Task> assignedTasks = new HashSet<>();
 
     //a user has a set of attachments uploaded by him
-    @OneToMany(mappedBy = "uploadedBy" , cascade = CascadeType.ALL , orphanRemoval = true)
+    @OneToMany(mappedBy = "uploadedBy", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Attachment> attachments = new HashSet<>();
 
     @CreationTimestamp

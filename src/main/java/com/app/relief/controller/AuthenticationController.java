@@ -23,7 +23,7 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
     private final UserMapper userMapper;
 
-    public AuthenticationController(AuthenticationService authenticationService, JwtService jwtService , UserMapper userMapper) {
+    public AuthenticationController(AuthenticationService authenticationService, JwtService jwtService, UserMapper userMapper) {
         this.authenticationService = authenticationService;
         this.jwtService = jwtService;
         this.userMapper = userMapper;

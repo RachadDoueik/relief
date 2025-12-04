@@ -4,6 +4,7 @@ import com.app.relief.enums.ProjectKey;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+
 import java.util.Set;
 import java.util.HashSet;
 import java.time.LocalDateTime;
@@ -26,10 +27,10 @@ public class Project {
     private User owner;
 
     //a project contains multiple tasks
-    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL , orphanRemoval = true)
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Task> tasks = new HashSet<>();
 
-    @Column(nullable = false , unique = true)
+    @Column(nullable = false, unique = true)
     private String projectName;
 
     @Enumerated(EnumType.STRING)

@@ -62,7 +62,7 @@ public class SecurityConfiguration {
 
         // using List.of() to set allowed origins, methods, and headers
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
-        configuration.setAllowedMethods(List.of("GET", "POST","UPDATE","DELETE"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "UPDATE", "DELETE"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

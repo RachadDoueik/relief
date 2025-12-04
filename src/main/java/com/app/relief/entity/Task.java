@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+
 import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.HashSet;
@@ -45,11 +46,11 @@ public class Task {
     private User createdBy;
 
     //a task can have multiple comments
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL , orphanRemoval = true)
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments = new HashSet<>();
 
     //a taask can have multiple attachments
-    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL , orphanRemoval = true)
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Attachment> attachments = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
