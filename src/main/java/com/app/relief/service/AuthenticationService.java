@@ -2,6 +2,7 @@ package com.app.relief.service;
 
 import com.app.relief.dto.UserDto;
 import com.app.relief.entity.User;
+import com.app.relief.enums.UserRole;
 import com.app.relief.mapper.UserMapper;
 import com.app.relief.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,6 +33,10 @@ public class AuthenticationService {
     public User signup(UserDto input) {
         User user = userMapper.userDtoToUser(input);
         user.setPassword(passwordEncoder.encode(input.getPassword()));
+
+        UserRole userRole = UserRole.valueOf(input.getUserRole().toString());
+        user.setUserRole(userRole);
+
         return userRepository.save(user);
     }
 

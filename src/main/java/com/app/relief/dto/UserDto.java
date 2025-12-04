@@ -1,5 +1,6 @@
 package com.app.relief.dto;
 
+import com.app.relief.enums.UserRole;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -14,4 +15,7 @@ public class UserDto {
 
     @NotNull
     private String password;
+
+    @NotNull
+    private UserRole userRole;
 }
