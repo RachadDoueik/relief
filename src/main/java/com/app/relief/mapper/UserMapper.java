@@ -19,6 +19,7 @@ public class UserMapper {
         userDto.setUsername(user.getUsername());
         userDto.setEmail(user.getEmail());
         userDto.setUserRole(user.getUserRole());
+        userDto.setDeleted(user.isDeleted());
 
         return userDto;
     }
@@ -35,6 +36,7 @@ public class UserMapper {
         user.setUsername(userDto.getUsername());
         user.setEmail(userDto.getEmail());
         user.setUserRole(userDto.getUserRole());
+        user.setDeleted(userDto.isDeleted());
 
         return user;
     }

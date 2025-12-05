@@ -18,4 +18,7 @@ public class UserDto {
 
     @NotNull
     private UserRole userRole;
+
+    @NotNull
+    private boolean isDeleted;
 }

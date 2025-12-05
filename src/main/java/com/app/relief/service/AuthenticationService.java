@@ -11,6 +11,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class AuthenticationService {
 
@@ -31,9 +33,20 @@ public class AuthenticationService {
 
     //signup method
     public User signup(UserDto input) {
+
+        Optional<User> existingUserByUsername = userRepository.findByUsername(input.getUsername());
+        Optional<User> existingUserByEmail = userRepository.findByEmail(input.getEmail());
+
+        if (existingUserByUsername.isPresent()) {
+            throw new RuntimeException("Username already taken.");
+        }
+
+        if (existingUserByEmail.isPresent()) {
+            throw new RuntimeException("Email already registered.");
+        }
+
         User user = userMapper.userDtoToUser(input);
         user.setPassword(passwordEncoder.encode(input.getPassword()));
-
         UserRole userRole = UserRole.valueOf(input.getUserRole().toString());
         user.setUserRole(userRole);
 

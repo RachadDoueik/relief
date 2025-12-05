@@ -50,6 +50,7 @@ public class SecurityConfiguration {
                 // 5. Authorization Rules (MUST COME AFTER the filter chain is defined if you use .anyRequest())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );
 
