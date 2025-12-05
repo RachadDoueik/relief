@@ -36,6 +36,11 @@ public class UserService {
            return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User with id " + id + " not found!"));
        }
 
+       //get user by username
+       public User getUserByUsername(String username) {
+           return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User with username " + username + " not found!"));
+       }
+
        //update user
        public boolean updateUser(Long id, UserDto userDto) {
             Optional<User> optionalUser = userRepository.findById(id);

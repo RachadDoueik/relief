@@ -31,6 +31,13 @@ public class AuthenticationController {
 
     @PostMapping("/signup")
     public ResponseEntity<Map<String, Object>> register(@RequestBody UserDto registerUserDto) {
+        try {
+            authenticationService.signup(registerUserDto);
+        } catch (RuntimeException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
         User registeredUser = authenticationService.signup(registerUserDto);
         Map<String, Object> response = new HashMap<>();
         response.put("message", "User registered successfully");
@@ -40,6 +47,15 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> authenticate(@RequestBody UserDto loginUserDto) {
+
+        try {
+            User authenticatedUser = authenticationService.authenticate(loginUserDto);
+        }
+        catch (RuntimeException e) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.status(401).body(errorResponse);
+        }
         User authenticatedUser = authenticationService.authenticate(loginUserDto);
 
         // Generate the JWT upon successful authentication

@@ -65,6 +65,14 @@ public class AuthenticationService {
 
         // If authenticate() succeeds, the user exists and the password is correct.
         return userRepository.findByUsername(input.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found after successful authentication."));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+    }
+
+
+    //logout method
+    public void logout() {
+        // Invalidate the JWT on the client side by removing it from storage (e.g., localStorage, cookies).
+        // Server-side JWT invalidation typically requires a token blacklist or short expiration times.
+
     }
 }
