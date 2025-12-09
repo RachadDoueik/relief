@@ -1,78 +1,131 @@
 package com.app.relief.service;
 
-import com.app.relief.dto.UserDto;
+import com.app.relief.dto.*;
+import com.app.relief.entity.RefreshToken;
 import com.app.relief.entity.User;
-import com.app.relief.enums.UserRole;
 import com.app.relief.mapper.UserMapper;
+import com.app.relief.repository.RefreshTokenRepository;
 import com.app.relief.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
+import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class AuthenticationService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenService refreshTokenService;
+    private final JwtService jwtService;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthenticationService(UserRepository userRepository,
-                                 PasswordEncoder passwordEncoder,
-                                 AuthenticationManager authenticationManager,
-                                 UserMapper userMapper) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
-        this.userMapper = userMapper;
-    }
 
-    //signup method
-    public User signup(UserDto input) {
+    public AuthResponse signup(UserDto request) {
 
-        Optional<User> existingUserByUsername = userRepository.findByUsername(input.getUsername());
-        Optional<User> existingUserByEmail = userRepository.findByEmail(input.getEmail());
-
-        if (existingUserByUsername.isPresent()) {
-            throw new RuntimeException("Username already taken.");
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new RuntimeException("Username already taken");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already registered");
         }
 
-        if (existingUserByEmail.isPresent()) {
-            throw new RuntimeException("Email already registered.");
-        }
+        User user = userMapper.userDtoToUser(request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userRepository.save(user);
 
-        User user = userMapper.userDtoToUser(input);
-        user.setPassword(passwordEncoder.encode(input.getPassword()));
-        UserRole userRole = UserRole.valueOf(input.getUserRole().toString());
-        user.setUserRole(userRole);
+        String accessToken = jwtService.generateAccessToken(user);
 
-        return userRepository.save(user);
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setUser(user);
+        refreshToken.setExpiryDate(refreshTokenService.refreshTokenExpirationDate());
+        refreshToken.setRevoked(false);
+        refreshTokenRepository.save(refreshToken);
+
+        return new AuthResponse(accessToken, refreshToken.getToken(), jwtService.getAccessTokenExpiration(), "User registered successfully");
     }
 
-    //login method
-    public User authenticate(UserDto input) {
-        // This line attempts the authentication process
+
+    public AuthResponse login(LoginRequest request) {
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        input.getUsername(),
-                        input.getPassword()
+                        request.getUsername(),
+                        request.getPassword()
                 )
         );
 
-        // If authenticate() succeeds, the user exists and the password is correct.
-        return userRepository.findByUsername(input.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found."));
+
+        // generate access token
+        String accessToken = jwtService.generateAccessToken(user);
+
+        // generate new refresh token
+        RefreshToken refreshToken = new RefreshToken();
+        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setUser(user);
+        refreshToken.setExpiryDate(refreshTokenService.refreshTokenExpirationDate());
+        refreshToken.setRevoked(false);
+        refreshTokenRepository.save(refreshToken);
+
+        return new AuthResponse(accessToken, refreshToken.getToken(), jwtService.getAccessTokenExpiration() , "User logged in successfully");
     }
 
 
-    //logout method
-    public void logout() {
-        // Invalidate the JWT on the client side by removing it from storage (e.g., localStorage, cookies).
-        // Server-side JWT invalidation typically requires a token blacklist or short expiration times.
 
+    public AuthResponse refresh(RefreshRequest refreshRequest) {
+        RefreshToken storedToken = refreshTokenRepository.findByToken(refreshRequest.getRefreshToken())
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+        if (storedToken.getExpiryDate().before(new java.util.Date())) {
+            throw new RuntimeException("Refresh token expired");
+        }
+
+        if (storedToken.isRevoked()) {
+            throw new RuntimeException("Refresh token has been revoked");
+        }
+
+        User user = storedToken.getUser();
+
+        // generate new tokens
+        String newAccessToken = jwtService.generateAccessToken(user);
+
+        // rotate refresh tokens: delete old → add new
+        refreshTokenRepository.delete(storedToken);
+
+        RefreshToken newToken = new RefreshToken();
+        newToken.setToken(UUID.randomUUID().toString());
+        newToken.setUser(user);
+        newToken.setExpiryDate(refreshTokenService.refreshTokenExpirationDate());
+        refreshTokenRepository.save(newToken);
+
+        return new AuthResponse(newAccessToken, newToken.getToken(), jwtService.getAccessTokenExpiration() , "Token refreshed successfully");
+    }
+
+    public LogoutResponse logout(LogoutRequest logoutRequest) {
+
+        RefreshToken storedToken = refreshTokenRepository.findByToken(logoutRequest.getRefreshToken())
+                .orElseThrow(() -> new RuntimeException("Invalid refresh token"));
+
+        if(storedToken.isRevoked()) {
+            throw new RuntimeException("Refresh token already revoked");
+        }
+
+        // revoke the refresh token
+        storedToken.setRevoked(true);
+        refreshTokenRepository.save(storedToken);
+
+        return new LogoutResponse(storedToken.getToken() , "Logout successful");
+    }
+
+    public boolean isAccessTokenExpired(String accessToken) {
+        return jwtService.isTokenExpired(accessToken);
     }
 }

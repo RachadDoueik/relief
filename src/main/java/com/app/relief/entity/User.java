@@ -58,6 +58,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "uploadedBy", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Attachment> attachments = new HashSet<>();
 
+    //a user has many refresh tokens
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL , orphanRemoval = true)
+    private Set<RefreshToken> refreshToken = new HashSet<>();
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

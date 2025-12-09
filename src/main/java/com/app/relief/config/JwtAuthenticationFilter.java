@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,8 +17,9 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 
-@Component // Make sure this annotation is present
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     private final HandlerExceptionResolver handlerExceptionResolver;
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
@@ -40,41 +40,53 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        String authHeader = request.getHeader("Authorization");
 
         try {
-            final String jwt = authHeader.substring(7);
-            final String username = jwtService.extractUsername(jwt);
+            // 1. No Bearer token → bypass
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
 
-            // Get the current security context
-            SecurityContext securityContext = SecurityContextHolder.getContext();
+            String token = authHeader.substring(7);
+            String path = request.getRequestURI();
 
-            // Only proceed if the username is valid and no one is already authenticated in this context
-            if (username != null && securityContext.getAuthentication() == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
+            // 2. /auth/refresh → skip access token validation on purpose
+            if (path.startsWith("/auth/refresh") || path.startsWith("/auth/signup") || path.startsWith("/auth/login")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
 
-                if (jwtService.isTokenValid(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null, // credentials are null in JWT flow as they are not needed after validation
-                            userDetails.getAuthorities()
-                    );
+            // 3. Validate access token for protected endpoints
+            String username = jwtService.extractUsername(token);
 
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                    // Set the new authentication token within the current context
-                    securityContext.setAuthentication(authToken);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                if (!jwtService.isTokenValid(token, userDetails)) {
+                    throw new RuntimeException("Invalid or expired access token");
                 }
+
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request)
+                );
+
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
 
             filterChain.doFilter(request, response);
+
         } catch (Exception exception) {
-            // Catches JWT-specific exceptions (malformed, expired, unsupported, etc.)
             handlerExceptionResolver.resolveException(request, response, null, exception);
         }
     }
