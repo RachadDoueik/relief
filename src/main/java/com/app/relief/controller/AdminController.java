@@ -2,6 +2,7 @@ package com.app.relief.controller;
 
 import com.app.relief.entity.User;
 import com.app.relief.service.UserService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +20,7 @@ public class AdminController {
     }
 
     @GetMapping("/users/all")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<User> showAllUsers() {
         return userService.getAllUsers();
     }

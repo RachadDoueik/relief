@@ -1,10 +1,15 @@
 package com.app.relief.service;
 
+import com.app.relief.dto.UpdateEmailResponse;
+import com.app.relief.dto.UpdateUserEmailRequest;
 import com.app.relief.dto.UserDto;
 import com.app.relief.entity.User;
 import com.app.relief.mapper.UserMapper;
 import com.app.relief.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -16,10 +21,12 @@ public class UserService {
 
        private final UserRepository userRepository;
        private final UserMapper userMapper;
+       private final PasswordEncoder passwordEncoder;
 
-       public UserService(UserRepository userRepository , UserMapper userMapper) {
+       public UserService(UserRepository userRepository , UserMapper userMapper , PasswordEncoder passwordEncoder) {
               this.userRepository = userRepository;
               this.userMapper = userMapper;
+              this.passwordEncoder = passwordEncoder;
        }
 
        //get all users publicly
@@ -27,42 +34,36 @@ public class UserService {
            return userRepository.findAll().stream().map(userMapper::userToUserDto).collect(Collectors.toList());
        }
 
-       //get all users
+       //get all users (full details) (admin only)
        public List<User> getAllUsers() {
               return userRepository.findAll();
        }
+
        //get user by id
-       public User getUserById(Long id) {
-           return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User with id " + id + " not found!"));
+       public User getUserById(Long userId){
+            return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User with id " + userId + "not found!"));
        }
 
-       //get user by username
-       public User getUserByUsername(String username) {
-           return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User with username " + username + " not found!"));
+       //get userProfile by id
+       public UserDto getUserProfileById(Long id) {
+           User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User with id " + id + " not found!"));
+           UserDto userDto = userMapper.userToUserDto(user);
+           userDto.setPassword(null);
+           return userDto;
        }
 
-       //update user
-       public boolean updateUser(Long id, UserDto userDto) {
-            Optional<User> optionalUser = userRepository.findById(id);
-            if(optionalUser.isPresent()){
-                Optional<User> userWithSameUsername = userRepository.findByUsername(userDto.getUsername());
-                if(userWithSameUsername.isPresent() && !userWithSameUsername.get().getId().equals(id)){
-                    // Username already taken by another user
-                    return false;
-                }
-                Optional<User> userWithSameEmail = userRepository.findByEmail(userDto.getEmail());
-                if(userWithSameEmail.isPresent() && !userWithSameEmail.get().getId().equals(id)){
-                    // Email already taken by another user
-                    return false;
-                }
-                User userToUpdate = optionalUser.get();
-                userToUpdate.setUsername(userDto.getUsername());
-                userToUpdate.setEmail(userDto.getEmail());
-                userToUpdate.setUserRole(userDto.getUserRole());
-                userRepository.save(userToUpdate);
-                return true;
-            }
-            return false;
+       //update a user's email
+       public UpdateEmailResponse updateUserEmail(UpdateUserEmailRequest updateUserRequest , Long id){
+
+           User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User with userId" + id + " not found!"));
+
+           Optional<User> userByEmail = userRepository.findByEmail(updateUserRequest.getEmail());
+           if(userByEmail.isPresent()) throw new RuntimeException("user with same email already exists !");
+
+           user.setEmail(updateUserRequest.getEmail());
+           userRepository.save(user);
+
+           return new UpdateEmailResponse("email updated successfully !");
        }
 
        //delete user
