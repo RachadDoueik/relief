@@ -28,8 +28,17 @@ public class Task {
     @Column(nullable = false)
     private String taskName;
 
-    @Column(nullable = false)
+    @Column
     private String taskDescription;
+
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status;
+
+    @Enumerated(EnumType.STRING)
+    private TaskPriority priority;
+
+    @Column
+    private LocalDateTime taskDueDate;
 
     //a task belongs to a single project
     @ManyToOne
@@ -53,12 +62,6 @@ public class Task {
     //a task can have multiple attachments
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Attachment> attachments = new HashSet<>();
-
-    @Enumerated(EnumType.STRING)
-    private TaskStatus status;
-
-    @Enumerated(EnumType.STRING)
-    private TaskPriority priority;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

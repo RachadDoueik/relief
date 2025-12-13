@@ -4,8 +4,11 @@ import com.app.relief.dto.project.CreateProjectRequest;
 import com.app.relief.dto.project.CreateProjectResponse;
 import com.app.relief.dto.project.ProjectDetailsDto;
 import com.app.relief.dto.project.ProjectSummaryDto;
+import com.app.relief.dto.task.CreateTaskRequest;
+import com.app.relief.dto.task.CreateTaskResponse;
 import com.app.relief.entity.User;
 import com.app.relief.service.ProjectService;
+import com.app.relief.service.TaskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,9 +20,11 @@ import java.util.List;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final TaskService taskService;
 
-    public ProjectController(ProjectService projectService){
+    public ProjectController(ProjectService projectService , TaskService taskService){
          this.projectService = projectService;
+         this.taskService = taskService;
     }
 
     @GetMapping("/summaries")
@@ -34,7 +39,7 @@ public class ProjectController {
         return projectService.getProjectsDetails();
     }
 
-    @PostMapping("/newProject")
+    @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CreateProjectResponse> createNewProject(@RequestBody CreateProjectRequest request, @AuthenticationPrincipal User user){
          try {
@@ -44,4 +49,17 @@ public class ProjectController {
              return ResponseEntity.badRequest().body(new CreateProjectResponse(e.getMessage()));
          }
     }
+
+    @PostMapping("/{projectId}/tasks")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<CreateTaskResponse> createNewTaskForProject(@RequestBody CreateTaskRequest request, @PathVariable Long projectId , @AuthenticationPrincipal User user){
+        try {
+            CreateTaskResponse response = taskService.createTaskForProject(request , projectId , user);
+            return ResponseEntity.ok(response);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new CreateTaskResponse(e.getMessage()));
+        }
+    }
+
 }
