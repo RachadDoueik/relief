@@ -1,5 +1,6 @@
 package com.app.relief.entity;
 
+import com.app.relief.enums.TaskPriority;
 import com.app.relief.enums.TaskStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -49,7 +50,7 @@ public class Task {
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Comment> comments = new HashSet<>();
 
-    //a taask can have multiple attachments
+    //a task can have multiple attachments
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Attachment> attachments = new HashSet<>();
 
@@ -57,7 +58,7 @@ public class Task {
     private TaskStatus status;
 
     @Enumerated(EnumType.STRING)
-    private TaskStatus priority;
+    private TaskPriority priority;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

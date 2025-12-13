@@ -1,5 +1,6 @@
-package com.app.relief.dto;
+package com.app.relief.dto.project;
 
+import com.app.relief.enums.ProjectKey;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,15 +9,15 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdatePasswordRequest {
+public class CreateProjectRequest {
 
     @NotNull
-    private String currentPassword;
+    private String projectName;
 
     @NotNull
-    private String newPassword;
+    private ProjectKey projectKey;
 
     @NotNull
-    private String newPasswordVerification;
+    private String projectDescription;
 
 }

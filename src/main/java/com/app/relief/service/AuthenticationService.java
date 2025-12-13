@@ -1,6 +1,7 @@
 package com.app.relief.service;
 
-import com.app.relief.dto.*;
+import com.app.relief.dto.auth.*;
+import com.app.relief.dto.user.UserDto;
 import com.app.relief.entity.RefreshToken;
 import com.app.relief.entity.User;
 import com.app.relief.mapper.UserMapper;

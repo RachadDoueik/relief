@@ -1,4 +1,4 @@
-package com.app.relief.dto;
+package com.app.relief.dto.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

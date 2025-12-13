@@ -1,4 +1,4 @@
-package com.app.relief.dto;
+package com.app.relief.dto.user;
 
 import com.app.relief.enums.UserRole;
 import jakarta.validation.constraints.NotNull;

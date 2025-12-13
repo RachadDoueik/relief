@@ -1,6 +1,6 @@
 package com.app.relief.controller;
 
-import com.app.relief.dto.*;
+import com.app.relief.dto.user.*;
 import com.app.relief.entity.User;
 import com.app.relief.mapper.UserMapper;
 import com.app.relief.service.UserService;
@@ -59,6 +59,4 @@ public class UserController {
             return ResponseEntity.badRequest().body(new UpdatePasswordResponse(e.getMessage()));
         }
     }
-
-
 }

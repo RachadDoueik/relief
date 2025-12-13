@@ -1,8 +1,8 @@
 package com.app.relief.controller;
 
 
-import com.app.relief.dto.*;
-import com.app.relief.mapper.UserMapper;
+import com.app.relief.dto.auth.*;
+import com.app.relief.dto.user.UserDto;
 import com.app.relief.service.AuthenticationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

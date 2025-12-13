@@ -1,4 +1,5 @@
-package com.app.relief.dto;
+package com.app.relief.dto.auth;
+
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -8,7 +9,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateEmailResponse {
+public class LoginRequest {
+
     @NotNull
-    private String message;
+    private String username;
+
+    @NotNull
+    private String password;
 }
