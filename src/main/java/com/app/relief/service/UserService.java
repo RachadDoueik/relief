@@ -1,14 +1,11 @@
 package com.app.relief.service;
 
-import com.app.relief.dto.UpdateEmailResponse;
-import com.app.relief.dto.UpdateUserEmailRequest;
-import com.app.relief.dto.UserDto;
+import com.app.relief.dto.*;
 import com.app.relief.entity.User;
 import com.app.relief.mapper.UserMapper;
 import com.app.relief.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -65,6 +62,34 @@ public class UserService {
 
            return new UpdateEmailResponse("email updated successfully !");
        }
+
+    public UpdatePasswordResponse updateUserPassword(UpdatePasswordRequest request , Long id) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+
+        // 1. Verify the OLD password before allowing the update
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new AccessDeniedException("Incorrect current password provided.");
+        }
+
+        // 2. Validate the NEW password against policies (length, common passwords list, etc.)
+        if (request.getNewPassword() == null || request.getNewPassword().length() < 12) {
+            throw new IllegalArgumentException("New password does not meet complexity requirements.");
+        }
+
+        // 3. Hash the NEW password using the encoder
+        String hashedNewPassword = passwordEncoder.encode(request.getNewPassword());
+
+        // 4. Save the new hashed password
+        user.setPassword(hashedNewPassword);
+        userRepository.save(user);
+
+        // 5. [Optional but Recommended] Invalidate other sessions/Generate new session cookie
+
+        return new UpdatePasswordResponse("Password updated successfully!");
+    }
+
 
        //delete user
        public boolean deleteUser(Long id) {

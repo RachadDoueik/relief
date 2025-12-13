@@ -1,8 +1,6 @@
 package com.app.relief.controller;
 
-import com.app.relief.dto.UpdateEmailResponse;
-import com.app.relief.dto.UpdateUserEmailRequest;
-import com.app.relief.dto.UserDto;
+import com.app.relief.dto.*;
 import com.app.relief.entity.User;
 import com.app.relief.mapper.UserMapper;
 import com.app.relief.service.UserService;
@@ -29,13 +27,6 @@ public class UserController {
         return userService.getAllUsersPublic();
     }
 
-    @GetMapping("/user/{id}")
-    @PreAuthorize("isAuthenticated()")
-    public User getUser(@PathVariable Long id, @AuthenticationPrincipal User user) {
-        if (!user.getId().equals(id)) throw new AccessDeniedException("Not allowed");
-        return userService.getUserById(id);
-    }
-
     @GetMapping("/profile/{userId}")
     @PreAuthorize("isAuthenticated()")
     public UserDto getUserProfile(@PathVariable Long userId , @AuthenticationPrincipal User user){
@@ -55,4 +46,19 @@ public class UserController {
             return ResponseEntity.badRequest().body(new UpdateEmailResponse(e.getMessage()));
         }
     }
+
+    @PutMapping("/profile/updatePassword/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UpdatePasswordResponse> updatePasswordResponse(@RequestBody UpdatePasswordRequest updatePasswordRequest , @PathVariable Long id , @AuthenticationPrincipal User user){
+        if(!user.getId().equals(id)) throw new AccessDeniedException("Not Allowed");
+        try {
+            UpdatePasswordResponse response =  userService.updateUserPassword(updatePasswordRequest , id);
+            return ResponseEntity.ok(response);
+        }
+        catch (Exception e){
+            return ResponseEntity.badRequest().body(new UpdatePasswordResponse(e.getMessage()));
+        }
+    }
+
+
 }
