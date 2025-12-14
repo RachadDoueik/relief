@@ -73,4 +73,19 @@ public class TaskController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    @DeleteMapping("/{taskId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteTaskById(@PathVariable Long taskId , @AuthenticationPrincipal User user){
+        try {
+            taskService.deleteTaskById(taskId , user);
+            return ResponseEntity.noContent().build();
+        } catch (TaskNotFoundException e) {
+            logger.warn(e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }

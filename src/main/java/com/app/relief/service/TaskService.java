@@ -99,4 +99,15 @@ public class TaskService {
 
         return new UpdateTaskResponse("Task with id " + taskId + " updated successfully !");
     }
+
+    public void deleteTaskById(Long taskId , User owner){
+
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " not found !"));
+
+        if(!task.getCreatedBy().getId().equals(owner.getId())){
+            throw new TaskOwnershipException("You do not own this task to delete it !");
+        }
+
+        taskRepository.delete(task);
+    }
 }
