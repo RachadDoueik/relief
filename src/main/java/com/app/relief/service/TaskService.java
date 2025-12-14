@@ -1,6 +1,5 @@
 package com.app.relief.service;
 
-
 import com.app.relief.dto.task.*;
 import com.app.relief.entity.Project;
 import com.app.relief.entity.Task;
@@ -13,6 +12,9 @@ import com.app.relief.repository.TaskRepository;
 import com.app.relief.repository.UserRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 @Service
 public class TaskService {
@@ -69,14 +71,32 @@ public class TaskService {
         return taskMapper.taskToTaskDetailsDto(task);
     }
 
-    public UpdateTaskResponse updateTaskById(Long taskId , User owner){
+    public UpdateTaskResponse updateTaskById(UpdateTaskRequest request , Long taskId , User owner){
 
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " not found !"));
 
-        if(task.getCreatedBy().getId().equals(taskId)){
+        if(!task.getCreatedBy().getId().equals(owner.getId())){
             throw new TaskOwnershipException("You do not own this task to modify it !");
         }
 
+        task.setTaskName(request.getTaskName());
+        task.setTaskDescription(request.getTaskDescription());
+        task.setStatus(request.getTaskStatus());
+        task.setPriority(request.getTaskPriority());
 
+        LocalDateTime dueDate = null;
+        String dueDateStr = request.getTaskDueDate();
+        if (dueDateStr != null && !dueDateStr.isBlank()) {
+            try {
+                dueDate = LocalDateTime.parse(dueDateStr, DateTimeFormatter.ISO_DATE_TIME);
+            } catch (DateTimeParseException e) {
+                DateTimeFormatter alt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                dueDate = LocalDateTime.parse(dueDateStr, alt);
+            }
+        }
+        task.setTaskDueDate(dueDate);
+        taskRepository.save(task);
+
+        return new UpdateTaskResponse("Task with id " + taskId + " updated successfully !");
     }
 }
