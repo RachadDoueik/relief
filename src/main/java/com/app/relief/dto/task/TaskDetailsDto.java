@@ -16,7 +16,7 @@ public class TaskDetailsDto {
 
     private Long id;
 
-    private String title;
+    private String taskName;
 
     private String description;
 
@@ -25,6 +25,5 @@ public class TaskDetailsDto {
     private Set<AttachmentDto> attachments;
 
     private Set<CommentDto> comments;
-
 
 }

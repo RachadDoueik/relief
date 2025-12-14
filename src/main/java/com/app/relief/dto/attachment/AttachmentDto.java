@@ -1,6 +1,7 @@
 package com.app.relief.dto.attachment;
 
 
+import com.app.relief.dto.user.UserSummaryDto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,4 +22,6 @@ public class AttachmentDto {
     private double fileSize;
 
     private LocalDateTime createdAt;
+
+    private UserSummaryDto uploadedBy;
 }

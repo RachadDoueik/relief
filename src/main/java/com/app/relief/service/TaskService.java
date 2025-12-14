@@ -1,11 +1,13 @@
 package com.app.relief.service;
 
 
-import com.app.relief.dto.task.CreateTaskRequest;
-import com.app.relief.dto.task.CreateTaskResponse;
+import com.app.relief.dto.task.*;
 import com.app.relief.entity.Project;
 import com.app.relief.entity.Task;
 import com.app.relief.entity.User;
+import com.app.relief.exception.TaskNotFoundException;
+import com.app.relief.exception.TaskOwnershipException;
+import com.app.relief.mapper.TaskMapper;
 import com.app.relief.repository.ProjectRepository;
 import com.app.relief.repository.TaskRepository;
 import com.app.relief.repository.UserRepository;
@@ -18,11 +20,13 @@ public class TaskService {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
 
-    public TaskService(UserRepository userRepository , ProjectRepository projectRepository , TaskRepository taskRepository){
+    public TaskService(UserRepository userRepository , ProjectRepository projectRepository , TaskRepository taskRepository, TaskMapper taskMapper){
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.taskRepository = taskRepository;
+        this.taskMapper = taskMapper;
     }
 
     //create new task for a specific project
@@ -53,4 +57,26 @@ public class TaskService {
     }
 
 
+    public TaskSummaryDto getTaskSummaryById(Long taskId) {
+
+        Task task = taskRepository.findById(taskId).orElseThrow(() ->  new TaskNotFoundException("Task with id " + taskId + " not found !"));
+        return taskMapper.taskToTaskSummaryDto(task);
+    }
+
+    public TaskDetailsDto getTaskDetailsById(Long taskId) {
+
+        Task task = taskRepository.findById(taskId).orElseThrow(() ->  new TaskNotFoundException("Task with id " + taskId + " not found !"));
+        return taskMapper.taskToTaskDetailsDto(task);
+    }
+
+    public UpdateTaskResponse updateTaskById(Long taskId , User owner){
+
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " not found !"));
+
+        if(task.getCreatedBy().getId().equals(taskId)){
+            throw new TaskOwnershipException("You do not own this task to modify it !");
+        }
+
+
+    }
 }
