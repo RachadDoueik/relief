@@ -1,5 +1,8 @@
 package com.app.relief.controller;
 
+import com.app.relief.dto.comment.CommentDto;
+import com.app.relief.dto.comment.CreateCommentRequest;
+import com.app.relief.dto.comment.CreateCommentResponse;
 import com.app.relief.dto.task.TaskDetailsDto;
 import com.app.relief.dto.task.TaskSummaryDto;
 import com.app.relief.dto.task.UpdateTaskRequest;
@@ -13,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -83,6 +88,33 @@ public class TaskController {
         } catch (TaskNotFoundException e) {
             logger.warn(e.getMessage());
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping("/{taskId}/comments")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<CreateCommentResponse> addCommentToTask(@PathVariable Long taskId, @RequestBody CreateCommentRequest request , @AuthenticationPrincipal User user) {
+        try {
+            var response = taskService.addCommentToTask(taskId, request, user);
+            return ResponseEntity.ok(response);
+        } catch (TaskNotFoundException e) {
+            logger.warn(e.getMessage());
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/{taskId}/comments")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<CommentDto>> getCommentsForTask(@PathVariable Long taskId) {
+        try {
+            var response = taskService.getCommentsForTask(taskId);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error(e.getMessage());
             return ResponseEntity.internalServerError().build();

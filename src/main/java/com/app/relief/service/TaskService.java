@@ -1,12 +1,18 @@
 package com.app.relief.service;
 
+import com.app.relief.dto.comment.CommentDto;
+import com.app.relief.dto.comment.CreateCommentRequest;
+import com.app.relief.dto.comment.CreateCommentResponse;
 import com.app.relief.dto.task.*;
+import com.app.relief.entity.Comment;
 import com.app.relief.entity.Project;
 import com.app.relief.entity.Task;
 import com.app.relief.entity.User;
 import com.app.relief.exception.TaskNotFoundException;
 import com.app.relief.exception.TaskOwnershipException;
+import com.app.relief.mapper.CommentMapper;
 import com.app.relief.mapper.TaskMapper;
+import com.app.relief.repository.CommentRepository;
 import com.app.relief.repository.ProjectRepository;
 import com.app.relief.repository.TaskRepository;
 import com.app.relief.repository.UserRepository;
@@ -15,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 @Service
 public class TaskService {
@@ -22,13 +29,22 @@ public class TaskService {
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final TaskRepository taskRepository;
+    private final CommentRepository commentRepository;
     private final TaskMapper taskMapper;
+    private final CommentMapper commentMapper;
 
-    public TaskService(UserRepository userRepository , ProjectRepository projectRepository , TaskRepository taskRepository, TaskMapper taskMapper){
+    public TaskService(UserRepository userRepository ,
+                       ProjectRepository projectRepository ,
+                       TaskRepository taskRepository,
+                       TaskMapper taskMapper,
+                       CommentRepository commentRepository,
+                       CommentMapper commentMapper) {
         this.userRepository = userRepository;
         this.projectRepository = projectRepository;
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
+        this.commentRepository = commentRepository;
+        this.commentMapper = commentMapper;
     }
 
     //create new task for a specific project
@@ -109,5 +125,29 @@ public class TaskService {
         }
 
         taskRepository.delete(task);
+    }
+
+    public CreateCommentResponse addCommentToTask(Long taskId, CreateCommentRequest request, User user) {
+
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException("Task with id " + taskId + " not found !"));
+
+        Comment comment = new Comment();
+        comment.setContent(request.getContent());
+        comment.setTask(task);
+        comment.setAuthor(user);
+        commentRepository.save(comment);
+
+        return new CreateCommentResponse("Comment added successfully to task with id " + taskId);
+    }
+
+    public List<CommentDto> getCommentsForTask(Long taskId) {
+
+        if(!taskRepository.existsById(taskId)) {
+            throw new TaskNotFoundException("Task with id " + taskId + " not found !");
+        }
+
+        List<Comment> comments = commentRepository.findByTaskId(taskId);
+
+        return comments.stream().map(commentMapper::commentToCommentDto).toList();
     }
 }
