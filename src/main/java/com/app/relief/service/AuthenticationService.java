@@ -7,11 +7,15 @@ import com.app.relief.entity.User;
 import com.app.relief.mapper.UserMapper;
 import com.app.relief.repository.RefreshTokenRepository;
 import com.app.relief.repository.UserRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
@@ -21,10 +25,14 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
-    private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+
+    @Setter
+    @Getter
+    @Value("${security.jwt.refresh-expiration}")
+    private long refreshExpiration;
 
 
     public AuthResponse signup(UserDto request) {
@@ -45,7 +53,7 @@ public class AuthenticationService {
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken(UUID.randomUUID().toString());
         refreshToken.setUser(user);
-        refreshToken.setExpiryDate(refreshTokenService.refreshTokenExpirationDate());
+        refreshToken.setExpiryDate(refreshTokenExpirationDate());
         refreshToken.setRevoked(false);
         refreshTokenRepository.save(refreshToken);
 
@@ -72,7 +80,7 @@ public class AuthenticationService {
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken(UUID.randomUUID().toString());
         refreshToken.setUser(user);
-        refreshToken.setExpiryDate(refreshTokenService.refreshTokenExpirationDate());
+        refreshToken.setExpiryDate(refreshTokenExpirationDate());
         refreshToken.setRevoked(false);
         refreshTokenRepository.save(refreshToken);
 
@@ -104,7 +112,7 @@ public class AuthenticationService {
         RefreshToken newToken = new RefreshToken();
         newToken.setToken(UUID.randomUUID().toString());
         newToken.setUser(user);
-        newToken.setExpiryDate(refreshTokenService.refreshTokenExpirationDate());
+        newToken.setExpiryDate(refreshTokenExpirationDate());
         refreshTokenRepository.save(newToken);
 
         return new AuthResponse(newAccessToken, newToken.getToken(), jwtService.getAccessTokenExpiration() , "Token refreshed successfully");
@@ -129,4 +137,9 @@ public class AuthenticationService {
     public boolean isAccessTokenExpired(String accessToken) {
         return jwtService.isTokenExpired(accessToken);
     }
+
+    public Date refreshTokenExpirationDate() {
+        return new Date(System.currentTimeMillis() + refreshExpiration);
+    }
+
 }
