@@ -30,6 +30,9 @@ public class Attachment {
     @Column(nullable = false)
     private double fileSize;
 
+    @Column(nullable = false)
+    private String fileType;
+
     //an attachment belongs to a single task
     @ManyToOne
     @JoinColumn(name = "task_id", nullable = false)
@@ -42,6 +45,4 @@ public class Attachment {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
-
-
 }

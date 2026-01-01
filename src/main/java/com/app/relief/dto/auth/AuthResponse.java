@@ -1,4 +1,4 @@
-package com.app.relief.dto;
+package com.app.relief.dto.auth;
 
 
 import lombok.Data;

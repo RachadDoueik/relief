@@ -21,6 +21,15 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private String projectName;
+
+    @Enumerated(EnumType.STRING)
+    private ProjectKey projectKey;
+
+    @Column(nullable = true)
+    private String projectDescription;
+
     //a project is created by a single user
     @ManyToOne
     @JoinColumn(name = "owner_id", nullable = false)
@@ -29,15 +38,6 @@ public class Project {
     //a project contains multiple tasks
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Task> tasks = new HashSet<>();
-
-    @Column(nullable = false, unique = true)
-    private String projectName;
-
-    @Enumerated(EnumType.STRING)
-    private ProjectKey projectKey;
-
-    @Column(nullable = false)
-    private String description;
 
     @CreationTimestamp
     private LocalDateTime creationDate;
