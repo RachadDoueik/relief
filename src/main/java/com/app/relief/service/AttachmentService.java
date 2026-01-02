@@ -2,9 +2,11 @@ package com.app.relief.service;
 
 
 import com.app.relief.dto.attachment.CreateAttachmentResponse;
+import com.app.relief.dto.attachment.DeleteAttachmentResponse;
 import com.app.relief.entity.Attachment;
 import com.app.relief.entity.Task;
 import com.app.relief.entity.User;
+import com.app.relief.exception.AttachmentOwnershipException;
 import com.app.relief.exception.TaskNotFoundException;
 import com.app.relief.exception.TaskOwnershipException;
 import com.app.relief.repository.AttachmentRepository;
@@ -53,7 +55,7 @@ public class AttachmentService {
         this.attachmentRepository = attachmentRepository;
         this.taskRepository = taskRepository;
 
-        // Initialize the Path here safely
+        // Initialize the Path safely
         this.uploadPath = Paths.get(uploadDir);
         System.out.println("Upload path: " + uploadPath.toAbsolutePath());
         System.out.println("Writable? " + Files.isWritable(uploadPath));
@@ -101,6 +103,25 @@ public class AttachmentService {
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to store file", e);
+        }
+    }
+
+    public DeleteAttachmentResponse deleteAttachmentById(Long attachmentId, User user){
+
+        Attachment attachmentToDelete = attachmentRepository.findById(attachmentId)
+                .orElseThrow(() -> new RuntimeException("Attachment not found"));
+
+        if(!attachmentToDelete.getUploadedBy().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized to delete this attachment");
+        }
+
+        try {
+            Path filePath = Paths.get(attachmentToDelete.getFileUrl());
+            Files.deleteIfExists(filePath);
+            attachmentRepository.delete(attachmentToDelete);
+            return new DeleteAttachmentResponse("Attachment deleted successfully");
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete file from storage", e);
         }
     }
 

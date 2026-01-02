@@ -26,7 +26,7 @@ public class UserService {
               this.passwordEncoder = passwordEncoder;
        }
 
-       //get all users publicly
+       //get all users publicly (no sensitive data)
        public List<UserDto> getAllUsersPublic() {
            return userRepository.findAll().stream().map(userMapper::userToUserDto).collect(Collectors.toList());
        }
