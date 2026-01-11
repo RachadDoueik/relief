@@ -6,7 +6,6 @@ import com.app.relief.dto.attachment.DeleteAttachmentResponse;
 import com.app.relief.entity.Attachment;
 import com.app.relief.entity.Task;
 import com.app.relief.entity.User;
-import com.app.relief.exception.AttachmentOwnershipException;
 import com.app.relief.exception.TaskNotFoundException;
 import com.app.relief.exception.TaskOwnershipException;
 import com.app.relief.repository.AttachmentRepository;

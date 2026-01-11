@@ -1,6 +1,7 @@
 package com.app.relief.dto.task;
 
 
+import com.app.relief.enums.TaskPriority;
 import com.app.relief.enums.TaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +17,8 @@ public class TaskSummaryDto {
     private String name;
 
     private String description;
+
+    private TaskPriority taskPriority;
 
     private TaskStatus taskStatus;
 }

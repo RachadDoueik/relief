@@ -36,9 +36,10 @@ public class ProjectMapper {
         projectDetailsDto.setId(project.getId());
         projectDetailsDto.setName(project.getProjectName());
         projectDetailsDto.setProjectKey(project.getProjectKey());
+        projectDetailsDto.setProjectDescription(project.getProjectDescription());
         projectDetailsDto.setTasks(
                 project.getTasks().stream()
-                        .map(task -> new TaskSummaryDto(task.getId() , task.getTaskName() , task.getTaskDescription() , task.getStatus()))
+                        .map(task -> new TaskSummaryDto(task.getId() , task.getTaskName() , task.getTaskDescription(), task.getPriority() , task.getStatus()))
                         .collect(Collectors.toSet())
         );
 

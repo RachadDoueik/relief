@@ -17,6 +17,8 @@ public class AttachmentDto {
 
     private String fileName;
 
+    private String fileType;
+
     private String fileUrl;
 
     private double fileSize;

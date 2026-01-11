@@ -17,6 +17,7 @@ public class AttachmentMapper {
         AttachmentDto ad = new AttachmentDto();
         ad.setId(attachment.getId());
         ad.setFileName(attachment.getFileName());
+        ad.setFileType(attachment.getFileType());
         ad.setFileSize(attachment.getFileSize());
         ad.setFileUrl(attachment.getFileUrl());
         ad.setCreatedAt(attachment.getCreatedAt());

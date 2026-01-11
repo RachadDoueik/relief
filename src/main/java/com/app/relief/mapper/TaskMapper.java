@@ -18,6 +18,7 @@ public class TaskMapper {
         tsd.setId(task.getId());
         tsd.setName(task.getTaskName());
         tsd.setDescription(task.getTaskDescription());
+        tsd.setTaskPriority(task.getPriority());
         tsd.setTaskStatus(task.getStatus());
         return tsd;
     }

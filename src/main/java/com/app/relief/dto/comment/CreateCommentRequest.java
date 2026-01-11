@@ -1,8 +1,5 @@
 package com.app.relief.dto.comment;
 
-
-import com.app.relief.entity.Task;
-import com.app.relief.entity.User;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;

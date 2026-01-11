@@ -19,5 +19,7 @@ public class ProjectDetailsDto {
 
     private ProjectKey projectKey;
 
+    private String projectDescription;
+
     private Set<TaskSummaryDto> tasks;
 }
